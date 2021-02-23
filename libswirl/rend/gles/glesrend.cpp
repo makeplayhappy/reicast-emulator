@@ -763,9 +763,12 @@ static void upload_vertex_indices()
 	glCheck();
 }
 
+//DH - note - this is called to render out the buffers
+// pvrrc.verts has the data we want to dump - possibly add a new method into pvrrc->dumpToFile() and trigger it here
 bool RenderFrame(u8* vram, bool isRenderFramebuffer)
 {
-    if (isRenderFramebuffer) {
+    // if (grabba) pvrrc - > dumpToFile(); // ?
+	if (isRenderFramebuffer) {
         RenderFramebuffer();
         glcache.ClearColor(0.f, 0.f, 0.f, 0.f);
         glClear(GL_COLOR_BUFFER_BIT);

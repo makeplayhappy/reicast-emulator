@@ -3,7 +3,6 @@
 */
 #include "license/bsd"
 
-
 #pragma once
 #include "ta.h"
 #include "pvr_regs.h"
@@ -284,5 +283,5 @@ bool UsingAutoSort(u8* vram, int pass_number);
 bool rend_framePending();
 
 
-void tactx_write_frame(const char* file, TA_context* ctx, u8* vram, u8* vram_ref = NULL);
+void tactx_write_frame(basic_string<char> frame_string, TA_context* ctx, u8* vram, u8* vram_ref = NULL);
 TA_context* tactx_read_frame(const char* file, u8* vram_ref = NULL);

@@ -2,7 +2,7 @@
 	This file is part of libswirl
 */
 #include "license/bsd"
-
+#include <time.h>
 
 #pragma once
 

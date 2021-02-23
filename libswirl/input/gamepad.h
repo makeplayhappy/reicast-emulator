@@ -37,6 +37,7 @@ enum DreamcastKey
     EMU_BTN_STICK_RIGHT    = 1 << 21,
     EMU_BTN_STICK_UP       = 1 << 22,
     EMU_BTN_STICK_DOWN     = 1 << 23,
+	EMU_BTN_GRABBA         = 1 << 24,
 
 	// Real axes
 	DC_AXIS_LT		 = 0x10000,

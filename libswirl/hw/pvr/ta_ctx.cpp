@@ -322,8 +322,16 @@ void tactx_Term()
 #include "deps/zlib/zlib.h"
 #include "hw/pvr/pvr_mem.h"
 
-void tactx_write_frame(const char* file, TA_context* ctx, u8* vram, u8* vram_ref) {
-    FILE* fw = fopen(file, "wb");
+void tactx_write_frame(basic_string<char> frame_string, TA_context* ctx, u8* vram, u8* vram_ref) {
+
+	printf("TA CTX: start dumping frame to: %s\n", frame_string.c_str());
+
+    FILE* fw = fopen(frame_string.c_str(), "wb");
+	if (fw == NULL)
+	{
+		printf("Failed to open %s for writing\n", frame_string.c_str());
+		return;
+	}
 
     //append to it
     fseek(fw, 0, SEEK_END);

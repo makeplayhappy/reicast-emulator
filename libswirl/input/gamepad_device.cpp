@@ -20,6 +20,8 @@ extern u16 kcode[4];
 extern u8 rt[4], lt[4];
 extern s8 joyx[4], joyy[4];
 
+extern bool dump_frame_switch;
+
 std::vector<std::shared_ptr<GamepadDevice>> GamepadDevice::_gamepads;
 cMutex GamepadDevice::_gamepads_mutex;
 
@@ -91,6 +93,12 @@ bool GamepadDevice::gamepad_btn_input(u32 code, bool pressed)
 				g_GUI->OpenSettings([this] {
 					settingsOpenning = false;
 				});
+			}
+			break;
+			// DH - grab vertex and dump to file
+		case EMU_BTN_GRABBA:
+			if (!dump_frame_switch) {
+				dump_frame_switch = true;
 			}
 			break;
 		case EMU_BTN_TRIGGER_LEFT:

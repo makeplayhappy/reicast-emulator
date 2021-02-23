@@ -18,10 +18,15 @@
 #include "deps/crypto/md5.h"
 
 #include "scripting/lua_bindings.h"
+#include "reios/reios.h"
 
 #include <memory>
 #include <atomic>
 #include <iterator>
+
+#include <sstream>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #if FEAT_HAS_NIXPROF
 #include "profiler/profiler.h"
@@ -187,14 +192,54 @@ void rend_term_renderer()
 }
 
 static bool rend_frame(u8* vram, TA_context* ctx) {
-#if FIXME
+//////#if FIXME
     if (dump_frame_switch) {
-        char name[32];
-        sprintf(name, "dcframe-%d", FrameCount);
-        tactx_write_frame(name, _pvrrc, &vram[0]);
+		bool dodump = true;
+		//build path to dump
+		std::string base_dump_dir = get_writable_data_path(DATA_PATH "frame_dump/");
+
+		if (!file_exists(base_dump_dir))
+			make_directory(base_dump_dir);
+
+		std::string game_id = reios_product_number;
+		const size_t str_end = game_id.find_last_not_of(" ");
+		if (str_end == std::string::npos)
+			dodump = false;
+
+		game_id = game_id.substr(0, str_end + 1);
+		std::replace(game_id.begin(), game_id.end(), ' ', '_');
+
+		//std::string game_id = GetGameId();
+		if (game_id.length() == 0)
+		dodump = false;
+
+		base_dump_dir += game_id + "/";
+		if (!file_exists(base_dump_dir))
+			make_directory(base_dump_dir);
+
+		std::stringstream path;
+
+		time_t rawtime;
+		struct tm * timeinfo;
+		char tbuffer [22];
+
+		time (&rawtime);
+		timeinfo = localtime (&rawtime);
+		
+		//Issue - seem to get the null character added in to the tbuffer even though sizes / maxsize should scrub it
+		//by adding in a "--" at the end and setting max size to remove it seems to work 
+		strftime (tbuffer,22,"dc-%j-%H-%M-%S-frame--",timeinfo); //%j%H%M%S 3+2+2+2 = 9
+		//rc = strcat(txt,timestamp);
+		path << base_dump_dir << std::string(tbuffer) << std::hex << FrameCount << ".vram";
+
+		basic_string<char> path_str = path.str();
+
+		if(dodump){
+        	tactx_write_frame(path_str, _pvrrc, &vram[0]);
+		}
         dump_frame_switch = false;
     }
-#endif
+////#endif
 
     if (renderer_changed)
     {
