@@ -142,9 +142,9 @@ struct rend_context
 	List<ModifierVolumeParam>  global_param_mvo;
 	List<ModifierVolumeParam>  global_param_mvo_tr;
 
-	List<PolyParam>   global_param_op;
-	List<PolyParam>   global_param_pt;
-	List<PolyParam>   global_param_tr;
+	List<PolyParam>   global_param_op; //opaque
+	List<PolyParam>   global_param_pt; //punch through
+	List<PolyParam>   global_param_tr; //translucent
 	List<RenderPass>  render_passes;
 
 	void Clear()
@@ -284,4 +284,6 @@ bool rend_framePending();
 
 
 void tactx_write_frame(basic_string<char> frame_string, TA_context* ctx, u8* vram, u8* vram_ref = NULL);
+void tactx_write_verts(basic_string<char> frame_string, TA_context* ctx);
+
 TA_context* tactx_read_frame(const char* file, u8* vram_ref = NULL);

@@ -43,8 +43,12 @@ public:
 		}
 	}
 
+	//sets the GL cull mode - front / back or front-back
+	// GL_FRONT, GL_BACK  , GL_FRONT_AND_BACK
 	void CullFace(GLenum mode) {
-      if (mode != _cull_face || _disable_cache) {
+		
+      //if (settings.rend.Culling && (mode != _cull_face || _disable_cache) ) {
+	  if (mode != _cull_face || _disable_cache ) {
 			_cull_face = mode;
 			glCullFace(mode);
 		}
@@ -60,10 +64,17 @@ public:
 		glDeleteTextures(n, textures);
 	}
 
+// set depth compare to one of GL_NEVER,GL_LESS ,GL_EQUAL,GL_LEQUAL ,GL_GREATER, GL_NOTEQUAL ,GL_GEQUAL, GL_ALWAYS
 	void DepthFunc(GLenum func) {
-		if (func != _depth_func || _disable_cache) {
-			_depth_func = func;
-			glDepthFunc(func);
+		if (!settings.rend.Culling){
+			glDepthFunc(GL_ALWAYS);
+		}else{
+
+			if (func != _depth_func || _disable_cache) {
+				_depth_func = func;
+				glDepthFunc(func);
+			}
+
 		}
 	}
 

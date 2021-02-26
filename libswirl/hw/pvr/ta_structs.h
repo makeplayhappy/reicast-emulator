@@ -66,7 +66,7 @@ union ISP_TSP
 		u32 Offset      : 1; //
 		u32 Texture     : 1; // -- up to here --
 		u32 ZWriteDis   : 1;
-		u32 CullMode    : 2;
+		u32 CullMode    : 2; //0 is no culling, 2 is Cull if Negative
 		u32 DepthMode   : 3;
 	};
 	struct

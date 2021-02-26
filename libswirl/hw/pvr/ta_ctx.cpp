@@ -322,10 +322,43 @@ void tactx_Term()
 #include "deps/zlib/zlib.h"
 #include "hw/pvr/pvr_mem.h"
 
+// dh addition - hopefull!
+void tactx_write_verts(basic_string<char> frame_string, TA_context* ctx) {
+	printf("TA CTX: start dumping vertex info to: %s\n", frame_string.c_str());
+
+	//VertexCount += cntx->rend.verts.used();
+	u32 vertex_count=0;
+	u32 idx_count=0;
+	vertex_count = ctx->rend.verts.used();
+	idx_count = ctx->rend.idx.used();
+
+	printf("Verts: %zu Idx: %zu \n", vertex_count, idx_count);
+
+/*
+    FILE* fw = fopen(frame_string.c_str(), "wb");
+	if (fw == NULL)
+	{
+		printf("Failed to open %s for writing\n", frame_string.c_str());
+		return;
+	}
+
+    //append to it
+    fseek(fw, 0, SEEK_END);
+
+    //u32 bytes = (u32)(ctx->tad.End() - ctx->tad.thd_root);
+
+    fwrite("TAVERTS5", 1, 8, fw);
+
+	fwrite(ctx->rend.verts.head(), 1, 4 * sizeof(Vertex), fw);
+
+	fwrite(ctx->rend.verts.head(), 1, 4 * sizeof(Vertex), fw);
+*/
+}
+//dump the frame
 void tactx_write_frame(basic_string<char> frame_string, TA_context* ctx, u8* vram, u8* vram_ref) {
 
 	printf("TA CTX: start dumping frame to: %s\n", frame_string.c_str());
-
+	tactx_write_verts(frame_string, ctx);
     FILE* fw = fopen(frame_string.c_str(), "wb");
 	if (fw == NULL)
 	{
@@ -338,17 +371,33 @@ void tactx_write_frame(basic_string<char> frame_string, TA_context* ctx, u8* vra
 
     u32 bytes = (u32)(ctx->tad.End() - ctx->tad.thd_root);
 
-    fwrite("TAFRAME4", 1, 8, fw);
+    fwrite("TAFRAME5", 1, 8, fw);
+
+	char testhex[4];
+	testhex[0] = 0x80;
+	testhex[1] = 0x08;
+	testhex[2] = 0x1e;
+	testhex[3] = 0x00;
+	fwrite(testhex, 1, sizeof(testhex), fw);
 
     fwrite(&ctx->rend.isRTT, 1, sizeof(ctx->rend.isRTT), fw);
     u32 zero = 0;
     fwrite(&zero, 1, sizeof(bool), fw);	// Was autosort
     fwrite(&ctx->rend.fb_X_CLIP.full, 1, sizeof(ctx->rend.fb_X_CLIP.full), fw);
     fwrite(&ctx->rend.fb_Y_CLIP.full, 1, sizeof(ctx->rend.fb_Y_CLIP.full), fw);
+	
+	
+	testhex[3] = 0x01;
+	fwrite(testhex, 1, sizeof(testhex), fw);
 
     fwrite(ctx->rend.global_param_op.head(), 1, sizeof(PolyParam), fw);
-    fwrite(ctx->rend.verts.head(), 1, 4 * sizeof(Vertex), fw);
+	
+	testhex[3] = 0x02;
+	fwrite(testhex, 1, sizeof(testhex), fw);
 
+    fwrite(ctx->rend.verts.head(), 1, 4 * sizeof(Vertex), fw);
+	//fwrite("SECTION2", 1, 8, fw);
+	
     u32 t = VRAM_SIZE;
     fwrite(&t, 1, sizeof(t), fw);
 
@@ -364,29 +413,48 @@ void tactx_write_frame(basic_string<char> frame_string, TA_context* ctx, u8* vra
         }
     }
 
+	//maybe not do the compression - we're trying to inspect it
+    fwrite(src_vram, 1, sizeof(src_vram), fw);
+
+/*
     compressed = (u8*)malloc(VRAM_SIZE + 16);
     compressed_size = VRAM_SIZE;
     verify(compress(compressed, &compressed_size, src_vram, VRAM_SIZE) == Z_OK);
     fwrite(&compressed_size, 1, sizeof(compressed_size), fw);
     fwrite(compressed, 1, compressed_size, fw);
     free(compressed);
+*/
+
+	testhex[3] = 0x03;
+	fwrite(testhex, 1, sizeof(testhex), fw);
 
     if (src_vram != vram)
         free(src_vram);
 
     fwrite(&bytes, 1, sizeof(t), fw);
+	fwrite(ctx->tad.thd_root, 1, sizeof(ctx->tad.thd_root), fw);
+	
+	/*
     compressed = (u8*)malloc(bytes + 16);
     compressed_size = bytes;
     verify(compress(compressed, &compressed_size, ctx->tad.thd_root, bytes) == Z_OK);
+	//fwrite("SECTION4", 1, 8, fw);
     fwrite(&compressed_size, 1, sizeof(compressed_size), fw);
     fwrite(compressed, 1, compressed_size, fw);
     free(compressed);
+	*/
+	testhex[3] = 0x04;
+	fwrite(testhex, 1, sizeof(testhex), fw);
 
     fwrite(&ctx->tad.render_pass_count, 1, sizeof(u32), fw);
     for (int i = 0; i < ctx->tad.render_pass_count; i++) {
         u32 offset = (u32)(ctx->tad.render_passes[i] - ctx->tad.thd_root);
+	
         fwrite(&offset, 1, sizeof(offset), fw);
     }
+
+	testhex[3] = 0x05;
+	fwrite(testhex, 1, sizeof(testhex), fw);
 
     fwrite(pvr_regs, 1, sizeof(pvr_regs), fw);
 

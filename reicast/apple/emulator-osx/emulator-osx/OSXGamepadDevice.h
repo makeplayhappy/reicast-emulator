@@ -26,6 +26,8 @@ public:
         set_button(EMU_BTN_TRIGGER_RIGHT, kVK_ANSI_V);
 		set_button(EMU_BTN_MENU, kVK_Tab);
         set_button(EMU_BTN_GRABBA, kVK_ANSI_Equal);
+        //set_button(EMU_BTN_NOCULL, kVK_ANSI_LeftBracket);
+        set_button(EMU_BTN_VTXDUMP, kVK_ANSI_RightBracket);
 		
         set_button(EMU_BTN_STICK_UP, kVK_ANSI_P);
         set_button(EMU_BTN_STICK_DOWN, kVK_ANSI_Semicolon);

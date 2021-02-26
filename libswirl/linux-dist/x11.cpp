@@ -93,6 +93,8 @@ Atom wmDeleteMessage;
 void* x11_vis;
 
 extern bool dump_frame_switch;
+extern bool dump_verts_switch;
+
 
 enum
 {

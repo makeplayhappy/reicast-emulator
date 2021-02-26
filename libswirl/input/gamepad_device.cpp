@@ -21,6 +21,8 @@ extern u8 rt[4], lt[4];
 extern s8 joyx[4], joyy[4];
 
 extern bool dump_frame_switch;
+extern bool dump_verts_switch;
+
 
 std::vector<std::shared_ptr<GamepadDevice>> GamepadDevice::_gamepads;
 cMutex GamepadDevice::_gamepads_mutex;
@@ -99,6 +101,11 @@ bool GamepadDevice::gamepad_btn_input(u32 code, bool pressed)
 		case EMU_BTN_GRABBA:
 			if (!dump_frame_switch) {
 				dump_frame_switch = true;
+			}
+			break;
+		case EMU_BTN_VTXDUMP:
+			if (!dump_verts_switch) {
+				dump_verts_switch = true;
 			}
 			break;
 		case EMU_BTN_TRIGGER_LEFT:

@@ -159,9 +159,11 @@ s32 SetTileClip(u32 val, GLint uniform)
 	return clip_mode;
 }
 
+
+//DH - add in a switch to turn all culling off!
 void SetCull(u32 CulliMode)
 {
-	if (CullMode[CulliMode]==GL_NONE)
+	if (!settings.rend.Culling || CullMode[CulliMode]==GL_NONE)
 	{ 
 		glcache.Disable(GL_CULL_FACE);
 	}
@@ -762,6 +764,13 @@ void GenSorted(int first, int count)
 		}
 	}
 
+	//DH - if we switch off culling we should reverse the draw order somehow.. 
+	//trying this...didnt work - its weird - and breaks the texture binding!
+	/*
+	if (!settings.rend.Culling){
+		std::reverse(pidx_sort.begin(),pidx_sort.end());
+	}
+	*/
 	SortTrigDrawParam* stdp=&pidx_sort[pidx_sort.size()-1];
 	stdp->count=aused*3-stdp->first;
 
@@ -1121,9 +1130,13 @@ void DrawStrips()
     for (int render_pass = 0; render_pass < pvrrc.render_passes.used(); render_pass++) {
         const RenderPass& current_pass = pvrrc.render_passes.head()[render_pass];
 
+		if (!settings.rend.Culling){
+			glcache.Disable(GL_DEPTH_TEST);
+		}else{
 		//initial state
-		glcache.Enable(GL_DEPTH_TEST);
-		glcache.DepthMask(GL_TRUE);
+			glcache.Enable(GL_DEPTH_TEST);
+			glcache.DepthMask(GL_TRUE);
+		}
 
 		//Opaque
 		DrawList<ListType_Opaque,false>(pvrrc.global_param_op, previous_pass.op_count, current_pass.op_count - previous_pass.op_count);

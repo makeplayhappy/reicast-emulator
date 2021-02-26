@@ -9,6 +9,8 @@
 #include "rend/TexCache.h"
 #include "cfg/cfg.h"
 #include "gui/gui.h"
+#include "reios/reios.h"
+#include <sstream>
 
 #ifdef TARGET_PANDORA
 	#include <unistd.h>
@@ -59,6 +61,8 @@ Tile clip
 #include "rend/rend.h"
 #include "input/gamepad.h"
 
+extern bool dump_verts_switch;
+extern int render_counter;
 float fb_scale_x,fb_scale_y;
 float scale_x, scale_y;
 
@@ -698,6 +702,58 @@ bool gles_init()
 	return true;
 }
 
+string makeDumpPath(string foldername){
+	bool dodump = true;
+	//build path to dump
+	std::string dirpath = DATA_PATH  + foldername + "/";
+	std::string base_dump_dir = get_writable_data_path(dirpath);
+
+	if (!file_exists(base_dump_dir))
+		make_directory(base_dump_dir);
+
+	std::string game_id = reios_product_number;
+	const size_t str_end = game_id.find_last_not_of(" ");
+	if (str_end == std::string::npos)
+		dodump = false;
+
+	game_id = game_id.substr(0, str_end + 1);
+	std::replace(game_id.begin(), game_id.end(), ' ', '_');
+
+	//std::string game_id = GetGameId();
+	if (game_id.length() == 0)
+	dodump = false;
+
+	base_dump_dir += game_id + "/";
+	if (!file_exists(base_dump_dir))
+		make_directory(base_dump_dir);
+
+	return base_dump_dir;
+}
+
+
+//string makeTimeFilename(string name, string ext){
+string makeTimeFilename(string name){
+
+	//std::stringstream returnname;
+
+	time_t rawtime;
+	struct tm * timeinfo;
+	string t_format = "dc-%j-%H-%M-%S-"+name+"--";
+	int t_length = t_format.length()-1;
+	char tbuffer [t_length];
+
+	time (&rawtime);
+	timeinfo = localtime (&rawtime);
+	
+	//Issue - seem to get the null character added in to the tbuffer even though sizes / maxsize should scrub it
+	//by adding in a "--" at the end and setting max size to remove it seems to work 
+	
+	strftime (tbuffer,t_length,t_format.c_str(),timeinfo); //%j%H%M%S 3+2+2+2 = 9
+	//rc = strcat(txt,timestamp);
+	//returnname << std::string(tbuffer) << std::hex << FrameCount;
+
+	return std::string(tbuffer);
+}
 
 void UpdateFogTexture(u8 *fog_table, GLenum texture_slot, GLint fog_image_format)
 {
@@ -747,8 +803,13 @@ bool ProcessFrame(Renderer* renderer, u8* vram, TA_context* ctx)
 
 static void upload_vertex_indices()
 {
+
 	if (gl.index_type == GL_UNSIGNED_SHORT)
 	{
+		
+		//if( dump_verts_switch ){
+		//	printf("upload_vertex_indices GL_UNSIGNED_SHORT");
+		//}
 		static bool overrun;
 		static List<u16> short_idx;
 		if (short_idx.daty != NULL)
@@ -757,10 +818,79 @@ static void upload_vertex_indices()
 		for (u32 *p = pvrrc.idx.head(); p < pvrrc.idx.LastPtr(0); p++)
 			*(short_idx.Append()) = *p;
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, short_idx.bytes(), short_idx.head(), GL_STREAM_DRAW);
-	}
-	else
+	}else{
+		//if( dump_verts_switch ){
+		//	printf("upload_vertex_indices NOT GL_UNSIGNED_SHORT");
+		//}
+		//- CRAZY TAXI is here - is not NOT GL_UNSIGNED_SHORT
+		
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER,pvrrc.idx.bytes(),pvrrc.idx.head(),GL_STREAM_DRAW);
+
+	}
+	
 	glCheck();
+}
+
+void RenderFrameDumpData(){
+
+	printf(" :: RenderFrameDumpData ::");
+	string folder = makeDumpPath("vbodump");
+	string filename = makeTimeFilename("vbo"+std::to_string(render_counter));
+	string fullpath = folder + filename + to_string(FrameCount) + ".verts" ;
+	// fwrite
+	printf("GLES Rend: RenderFrameDumpData dumping VBO to: %s\n", fullpath.c_str());
+
+	FILE* fw = fopen(fullpath.c_str(), "wb");
+	if (fw == NULL){
+		printf("Failed to open %s for writing\n", fullpath.c_str());
+		return;
+	}
+
+	// Maybe write these out to seperate files?
+//	fseek(fw, 0, SEEK_END);
+
+	fwrite(pvrrc.verts.head(), 1, pvrrc.verts.bytes(), fw);
+	fclose(fw);
+
+	fullpath = folder + filename + to_string(FrameCount) + ".indc" ;
+	fw = fopen(fullpath.c_str(), "wb");
+	if (fw == NULL){
+		printf("Failed to open %s for writing\n", fullpath.c_str());
+		return;
+	}
+	fwrite(pvrrc.idx.head(), 1, pvrrc.idx.bytes(), fw);
+	fclose(fw);
+
+	fullpath = folder + filename + to_string(FrameCount) + ".opaq" ;
+	fw = fopen(fullpath.c_str(), "wb");
+	if (fw == NULL){
+		printf("Failed to open %s for writing\n", fullpath.c_str());
+		return;
+	}
+	fwrite(pvrrc.global_param_op.head(), 1, pvrrc.global_param_op.bytes(), fw);
+	fclose(fw);
+
+	fullpath = folder + filename + to_string(FrameCount) + ".trans" ;
+	fw = fopen(fullpath.c_str(), "wb");
+	if (fw == NULL){
+		printf("Failed to open %s for writing\n", fullpath.c_str());
+		return;
+	}
+	fwrite(pvrrc.global_param_tr.head(), 1, pvrrc.global_param_tr.bytes(), fw);
+	fclose(fw);
+
+	fullpath = folder + filename + to_string(FrameCount) + ".pcht" ;
+	fw = fopen(fullpath.c_str(), "wb");
+	if (fw == NULL){
+		printf("Failed to open %s for writing\n", fullpath.c_str());
+		return;
+	}
+	fwrite(pvrrc.global_param_pt.head(), 1, pvrrc.global_param_pt.bytes(), fw);
+	fclose(fw);
+
+	render_counter++;
+
+
 }
 
 //DH - note - this is called to render out the buffers
@@ -1120,7 +1250,16 @@ bool RenderFrame(u8* vram, bool isRenderFramebuffer)
 
 	if (!isRenderFramebuffer)
 	{
-		//Main VBO
+		if( dump_verts_switch ){
+
+			RenderFrameDumpData();
+
+		}
+		//CRAZY TAXI is here - is not isRenderFramebuffer
+		//dump this data somehow
+		//glBufferData(GL_ELEMENT_ARRAY_BUFFER,pvrrc.idx.bytes(),pvrrc.idx.head(),GL_STREAM_DRAW); 
+
+		//Main VBO:  Vertex Buffer Object
 		glBindBuffer(GL_ARRAY_BUFFER, gl.vbo.geometry); glCheck();
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl.vbo.idxs); glCheck();
 
@@ -1203,12 +1342,19 @@ bool RenderFrame(u8* vram, bool isRenderFramebuffer)
 		scale_x /= scissoring_scale_x;
 
 		DrawStrips();
-	}
-	else
-	{
+
+	}else{
+
+		if( dump_verts_switch ){
+			printf(" :: isRenderFramebuffer ELSE ::");
+		}
+
 		glBufferData(GL_ARRAY_BUFFER, pvrrc.verts.bytes(), pvrrc.verts.head(), GL_STREAM_DRAW);
 		upload_vertex_indices();
 	}
+
+	
+
 	#if HOST_OS==OS_WINDOWS
 		//Sleep(40); //to test MT stability
 	#endif
@@ -1268,6 +1414,8 @@ void png_cstd_read(png_structp png_ptr, png_bytep data, png_size_t length)
 {
 	fread(data,1, length,pngfile);
 }
+
+
 
 u8* loadPNGData(const string& fname, int &width, int &height)
 {

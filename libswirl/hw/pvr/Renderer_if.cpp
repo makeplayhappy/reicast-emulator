@@ -114,8 +114,8 @@ void killtex();
 bool render_output_framebuffer();
 
 bool dump_frame_switch = false;
-
-
+bool dump_verts_switch = false;
+int render_counter = 1;
 // auto or slug
 //vulkan
 //gl41
@@ -193,7 +193,8 @@ void rend_term_renderer()
 
 static bool rend_frame(u8* vram, TA_context* ctx) {
 //////#if FIXME
-    if (dump_frame_switch) {
+    if (dump_frame_switch){
+		// || dump_verts_switch) {
 		bool dodump = true;
 		//build path to dump
 		std::string base_dump_dir = get_writable_data_path(DATA_PATH "frame_dump/");
@@ -228,17 +229,29 @@ static bool rend_frame(u8* vram, TA_context* ctx) {
 		
 		//Issue - seem to get the null character added in to the tbuffer even though sizes / maxsize should scrub it
 		//by adding in a "--" at the end and setting max size to remove it seems to work 
-		strftime (tbuffer,22,"dc-%j-%H-%M-%S-frame--",timeinfo); //%j%H%M%S 3+2+2+2 = 9
+		if( dump_frame_switch ){
+			strftime (tbuffer,22,"dc-%j-%H-%M-%S-frame--",timeinfo); //%j%H%M%S 3+2+2+2 = 9
 		//rc = strcat(txt,timestamp);
-		path << base_dump_dir << std::string(tbuffer) << std::hex << FrameCount << ".vram";
+			path << base_dump_dir << std::string(tbuffer) << std::hex << FrameCount << ".vram";
+		}
 
+		//if( dump_verts_switch ){
+		//	path << base_dump_dir;// << std::string(tbuffer) << std::hex << FrameCount << ".vram";
+		//}
 		basic_string<char> path_str = path.str();
 
-		if(dodump){
-        	tactx_write_frame(path_str, _pvrrc, &vram[0]);
+		if(dodump ){
+			if(dump_frame_switch){
+        		tactx_write_frame(path_str, ctx, &vram[0]);
+			}
+			
 		}
         dump_frame_switch = false;
+		
     }
+	// endif dump_frame_switch
+
+
 ////#endif
 
     if (renderer_changed)
@@ -578,8 +591,23 @@ void rend_vblank()
 	}
 	render_called = false;
     pvr_update_framebuffer_watches();
+	reset_dump_switches();
+
 }
 
+
+void reset_dump_switches(){
+///std::to_string(render_counter)
+	
+	
+	if( dump_verts_switch ){
+		printf(" ::resetDumpSwitches:: %d", render_counter);
+		dump_verts_switch = false;
+	}
+	if(render_counter != 1 ){
+		render_counter = 1;
+	}
+}
 
 void rend_set_fb_scale(float x, float y)
 {

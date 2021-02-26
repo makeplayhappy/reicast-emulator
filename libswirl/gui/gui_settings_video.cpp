@@ -51,7 +51,10 @@ void gui_settings_video()
             gui_ShowHelpMarker("Reduce frame skipping by pausing the CPU when possible. Recommended for powerful devices");
 	    	ImGui::Checkbox("Clipping", &settings.rend.Clipping);
             ImGui::SameLine();
-            gui_ShowHelpMarker("Enable clipping. May produce graphical errors when disabled");
+			gui_ShowHelpMarker("Enable clipping. May produce graphical errors when disabled");
+	    	ImGui::Checkbox("Culling", &settings.rend.Culling);
+            ImGui::SameLine();
+            gui_ShowHelpMarker("Switch Culling off");
 	    	ImGui::Checkbox("Shadows", &settings.rend.ModifierVolumes);
             ImGui::SameLine();
             gui_ShowHelpMarker("Enable modifier volumes, usually used for shadows");

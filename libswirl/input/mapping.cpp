@@ -36,6 +36,7 @@ button_list[] =
 	{ EMU_BTN_ESCAPE, "emulator", "btn_escape" },
 	{ EMU_BTN_MENU, "emulator", "btn_menu" },
 	{ EMU_BTN_GRABBA, "emulator", "btn_grabba" },
+	{ EMU_BTN_VTXDUMP, "emulator", "btn_vtxdump" },
 	{ EMU_BTN_TRIGGER_LEFT, "compat", "btn_trigger_left" },
 	{ EMU_BTN_TRIGGER_RIGHT, "compat", "btn_trigger_right" },
 	{ EMU_BTN_STICK_LEFT, "compat", "btn_stick_left" },

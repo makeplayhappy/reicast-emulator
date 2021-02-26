@@ -300,6 +300,7 @@ void InitSettings()
     settings.rend.TranslucentPolygonDepthMask = false;
     settings.rend.ModifierVolumes = true;
     settings.rend.Clipping = true;
+    settings.rend.Culling = true;
     settings.rend.TextureUpscale = 1;
     settings.rend.MaxFilteredTextureSize = 256;
     settings.rend.ExtraDepthScale = 1.f;
@@ -395,6 +396,7 @@ void LoadSettings(bool game_specific)
     settings.rend.TranslucentPolygonDepthMask = cfgLoadBool(config_section, "rend.TranslucentPolygonDepthMask", settings.rend.TranslucentPolygonDepthMask);
     settings.rend.ModifierVolumes = cfgLoadBool(config_section, "rend.ModifierVolumes", settings.rend.ModifierVolumes);
     settings.rend.Clipping = cfgLoadBool(config_section, "rend.Clipping", settings.rend.Clipping);
+    settings.rend.Culling = cfgLoadBool(config_section, "rend.Culling", settings.rend.Culling);
     settings.rend.TextureUpscale = cfgLoadInt(config_section, "rend.TextureUpscale", settings.rend.TextureUpscale);
     settings.rend.MaxFilteredTextureSize = cfgLoadInt(config_section, "rend.MaxFilteredTextureSize", settings.rend.MaxFilteredTextureSize);
     std::string extra_depth_scale_str = cfgLoadStr(config_section, "rend.ExtraDepthScale", "");
@@ -565,6 +567,7 @@ void SaveSettings()
     cfgSaveInt("config", "rend.RenderToTextureUpscale", settings.rend.RenderToTextureUpscale);
     cfgSaveBool("config", "rend.ModifierVolumes", settings.rend.ModifierVolumes);
     cfgSaveBool("config", "rend.Clipping", settings.rend.Clipping);
+    cfgSaveBool("config", "rend.Culling", settings.rend.Culling);
     cfgSaveInt("config", "rend.TextureUpscale", settings.rend.TextureUpscale);
     cfgSaveInt("config", "rend.MaxFilteredTextureSize", settings.rend.MaxFilteredTextureSize);
     cfgSaveBool("config", "rend.CustomTextures", settings.rend.CustomTextures);
